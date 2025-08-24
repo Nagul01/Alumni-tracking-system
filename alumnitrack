@@ -1,0 +1,197 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Alumni {
+    int id;
+    char name[100];
+    char passingYear[10];
+    struct Alumni *next;
+} Alumni;
+
+Alumni *head = NULL;
+
+// Function prototypes
+Alumni* createAlumni(int id, const char *name, const char *passingYear);
+void insertAlumni(int id, const char *name, const char *passingYear);
+void displayAlumni();
+void searchAlumni();
+void updateAlumni();
+void deleteAlumni();
+void flushInput();
+void menu();
+
+Alumni* createAlumni(int id, const char *name, const char *passingYear) {
+    Alumni newAlumni = (Alumni) malloc(sizeof(Alumni));
+    if (!newAlumni) {
+        printf("Memory allocation failed.\n");
+        exit(1);
+    }
+    newAlumni->id = id;
+    strncpy(newAlumni->name, name, sizeof(newAlumni->name) - 1);
+    newAlumni->name[sizeof(newAlumni->name) - 1] = '\0';
+    strncpy(newAlumni->passingYear, passingYear, sizeof(newAlumni->passingYear) - 1);
+    newAlumni->passingYear[sizeof(newAlumni->passingYear) - 1] = '\0';
+    newAlumni->next = NULL;
+    return newAlumni;
+}
+
+void insertAlumni(int id, const char *name, const char *passingYear) {
+    Alumni *newAlumni = createAlumni(id, name, passingYear);
+    if (!head) {
+        head = newAlumni;
+    } else {
+        Alumni *temp = head;
+        while (temp->next) temp = temp->next;
+        temp->next = newAlumni;
+    }
+    printf("Alumni inserted successfully.\n");
+}
+
+void displayAlumni() {
+    if (!head) {
+        printf("No alumni records found.\n");
+        return;
+    }
+    printf("Alumni List:\nID\tName\t\tPassing Year\n");
+    for (Alumni *temp = head; temp != NULL; temp = temp->next) {
+        printf("%d\t%s\t\t%s\n", temp->id, temp->name, temp->passingYear);
+    }
+}
+
+void flushInput() {
+    int c; while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
+void searchAlumni() {
+    int choice, id;
+    char name[100];
+    Alumni *temp = head;
+    printf("Search by:\n1. ID\n2. Name\nEnter choice: ");
+    scanf("%d", &choice);
+    flushInput();
+    if (choice == 1) {
+        printf("Enter Alumni ID: ");
+        scanf("%d", &id);
+        flushInput();
+        while (temp) {
+            if (temp->id == id) {
+                printf("Alumni found:\nID: %d\nName: %s\nPassing Year: %s\n", temp->id, temp->name, temp->passingYear);
+                return;
+            }
+            temp = temp->next;
+        }
+        printf("Alumni with ID %d not found.\n", id);
+    } else if (choice == 2) {
+        printf("Enter Alumni Name: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = 0;
+        while (temp) {
+            if (strcmp(temp->name, name) == 0) {
+                printf("Alumni found:\nID: %d\nName: %s\nPassing Year: %s\n", temp->id, temp->name, temp->passingYear);
+                return;
+            }
+            temp = temp->next;
+        }
+        printf("Alumni with name %s not found.\n", name);
+    } else {
+        printf("Invalid choice.\n");
+    }
+}
+
+void updateAlumni() {
+    int id;
+    printf("Enter Alumni ID to update: ");
+    scanf("%d", &id);
+    flushInput();
+    Alumni *temp = head;
+    while (temp) {
+        if (temp->id == id) {
+            printf("Enter new name: ");
+            fgets(temp->name, sizeof(temp->name), stdin);
+            temp->name[strcspn(temp->name, "\n")] = 0;
+            printf("Enter new passing year: ");
+            scanf("%9s", temp->passingYear);
+            flushInput();
+            printf("Alumni record updated successfully.\n");
+            return;
+        }
+        temp = temp->next;
+    }
+    printf("Alumni with ID %d not found.\n", id);
+}
+
+void deleteAlumni() {
+    int id;
+    printf("Enter Alumni ID to delete: ");
+    scanf("%d", &id);
+    flushInput();
+    Alumni *temp = head, *prev = NULL;
+    while (temp) {
+        if (temp->id == id) {
+            if (!prev) head = temp->next;
+            else prev->next = temp->next;
+            free(temp);
+            printf("Alumni with ID %d deleted successfully.\n", id);
+            return;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("Alumni with ID %d not found.\n", id);
+}
+
+void menu() {
+    int choice;
+    while (1) {
+        printf("\nAlumni Tracking System Menu:\n");
+        printf("1. Insert Alumni\n2. Display Alumni\n3. Search Alumni\n4. Update Alumni\n5. Delete Alumni\n6. Exit\n");
+        printf("Enter your choice: ");
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input.\n");
+            flushInput();
+            continue;
+        }
+        flushInput();
+
+        switch (choice) {
+            case 1: {
+                int id;
+                char name[100], passingYear[10];
+                printf("Enter ID: ");
+                scanf("%d", &id);
+                flushInput();
+                printf("Enter Name: ");
+                fgets(name, sizeof(name), stdin);
+                name[strcspn(name, "\n")] = 0;
+                printf("Enter Passing Year: ");
+                scanf("%9s", passingYear);
+                flushInput();
+                insertAlumni(id, name, passingYear);
+                break;
+            }
+            case 2:
+                displayAlumni();
+                break;
+            case 3:
+                searchAlumni();
+                break;
+            case 4:
+                updateAlumni();
+                break;
+            case 5:
+                deleteAlumni();
+                break;
+            case 6:
+                printf("Exiting program.\n");
+                exit(0);
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    }
+}
+
+int main() {
+    menu();
+    return 0;
+}
